@@ -1,1 +1,1 @@
-# EECS399-FirstAid
+# EECS338-FirstAid
