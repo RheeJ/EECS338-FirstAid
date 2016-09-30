@@ -1,7 +1,23 @@
 <html>
 	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	</head>
 	<body>
-		<p>THIS IS HOMEPAGE</p>
+		<script>
+			$( document ).ready(function() {
+    			$.ajax({
+   					type: 'GET',
+					dataType:'json',
+					url: '/manual_app/',
+					headers: { Authorization: 'Bearer ' + localStorage.access_token },
+   					success: function(text) {
+   						var str = text;
+   						$('#new').html(text);
+   					}
+				});
+    		});
+		</script>
+		<p>Test HTML</p>
+		<p id="new"></p>
 	</body>
 </html>
