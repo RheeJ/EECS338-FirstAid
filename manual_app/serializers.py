@@ -4,7 +4,7 @@ from rest_framework import serializers
 class GraphSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Graph
-        fields = ('name')
+        fields = ('__all__')
 
 class NodesSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
