@@ -5,9 +5,12 @@ WORKDIR /app
 RUN pip install gunicorn
 RUN pip install Django==1.10.2
 RUN pip install djangorestframework==3.4.7
+RUN pip install mysql-python==1.2.5
 RUN apt-get update && apt-get install dos2unix
 COPY . /app/
 COPY start.sh /start.sh
 EXPOSE 8080
+RUN python manage.py makemigrations
+RUN python manage.py migrate
 RUN dos2unix start.sh
 CMD /bin/bash ./start.sh
