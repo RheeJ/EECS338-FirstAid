@@ -1,0 +1,5 @@
+Django==1.10.2
+djangorestframework==3.4.7
+mysql-python==1.2.5
+bs4==0.0.1
+gunicorn==19.6.0
