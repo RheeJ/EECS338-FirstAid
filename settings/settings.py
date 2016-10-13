@@ -88,6 +88,9 @@ DATABASES = {
         'PASSWORD': 'wildcat2016',
         'HOST': 'first-aid-db.cb2r7wmunbdb.us-west-2.rds.amazonaws.com',
         'PORT': '3306',
+        'OPTIONS': {
+            'sql_mode': 'traditional',
+        }
     }
 }
 
