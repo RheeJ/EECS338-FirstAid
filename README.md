@@ -4,7 +4,7 @@
 #
 #Run: virtualenv venv. First pip install virtualenv
 #
-#Package: So far we only have django so: pip install django
+#Package: pip install --no-deps -r requirements/production.txt
 #
 #Then source venv/bin/activate on Mac and cd venv/Scripts && activate on PC
 #
