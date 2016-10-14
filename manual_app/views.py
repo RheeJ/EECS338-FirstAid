@@ -6,17 +6,17 @@ from rest_framework.decorators import api_view
 
 from rest_framework import viewsets
 from rest_framework import permissions
-from manual_app.serializers import GraphSerializer, NodesSerializer, ATSerializer
+from manual_app.serializers import *
 
-from manual_app.models import Graph, Nodes, AdditionalTools
+from manual_app.models import *
 
-class GraphViewSet(viewsets.ModelViewSet):
-	queryset = Graph.objects.all()
-	serializer_class = GraphSerializer
+class InstructionSetViewSet(viewsets.ModelViewSet):
+	queryset = InstructionSet.objects.all()
+	serializer_class = InstructionSetSerializer
 
-class NodesViewSet(viewsets.ModelViewSet):
-	queryset = Nodes.objects.all()
-	serializer_class = NodesSerializer
+class StepViewSet(viewsets.ModelViewSet):
+	queryset = Step.objects.all()
+	serializer_class = StepSerializer
 
 class ATViewSet(viewsets.ModelViewSet):
 	queryset = AdditionalTools.objects.all()
