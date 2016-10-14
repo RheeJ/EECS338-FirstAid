@@ -1,19 +1,19 @@
-from manual_app.models import Graph, Nodes, AdditionalTools
+from manual_app.models import *
 from rest_framework import serializers
 
-class GraphSerializer(serializers.HyperlinkedModelSerializer):
+class InstructionSetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Graph
+        model = InstructionSet
         fields = ('__all__')
 
-class NodesSerializer(serializers.HyperlinkedModelSerializer):
+class StepSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
-		model = Nodes
-		fields = ('step_number', 'instruction', 'graph')
+		model = Step
+		fields = ('__all__')
 
 class ATSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = AdditionalTools
-		fields = ('info_name', 'info_type', 'info_path', 'node')
+		fields = ('__all__')
 
 		

@@ -4,8 +4,8 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 
-router.register(r'graph', GraphViewSet, 'graph')
-router.register(r'nodes', NodesViewSet, 'nodes')
+router.register(r'instruction', InstructionSetViewSet, 'instruction')
+router.register(r'step', StepViewSet, 'step')
 router.register(r'additionals', ATViewSet, 'additionaltools')
 
 urlpatterns = [

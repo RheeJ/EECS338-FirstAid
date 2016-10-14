@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Graph, Nodes, AdditionalTools
+from .models import *
 
-admin.site.register(Graph)
-admin.site.register(Nodes)
+admin.site.register(InstructionSet)
+admin.site.register(Step)
 admin.site.register(AdditionalTools)
