@@ -83,10 +83,10 @@ REST_FRAMEWORK = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'first_aid_db',
+        'NAME': 'fa_database',
         'USER': 'tre3frog',
         'PASSWORD': 'wildcat2016',
-        'HOST': 'first-aid-db.cb2r7wmunbdb.us-west-2.rds.amazonaws.com',
+        'HOST': 'fa-db.cb2r7wmunbdb.us-west-2.rds.amazonaws.com',
         'PORT': '3306',
         'OPTIONS': {
             'sql_mode': 'traditional',
