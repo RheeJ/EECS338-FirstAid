@@ -10,5 +10,5 @@ router.register(r'additionals', ATViewSet, 'additionaltools')
 
 urlpatterns = [
 	url(r'^', include(router.urls)),
-	url(r'^test/$', test_function)
+	url(r'^user_request/$', user_question_parse)
 ]
