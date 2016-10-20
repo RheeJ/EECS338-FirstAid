@@ -1,0 +1,2 @@
+task :setup do sh "cd JPype-0.5.4.1 && python setup.py build"
+end
