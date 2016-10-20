@@ -82,7 +82,7 @@ def navigational(word, proxy):
 			proxy.step = current_step
 			proxy.save()
 		except:
-			return_val = "This is the first instruction" + current_set.step.get(step_number=0).description
+			return_val = "This is the first instruction! " + current_set.step_set.get(step_number=0).description
 		return return_val
 	else:
 		return 0
@@ -90,9 +90,9 @@ def navigational(word, proxy):
 @api_view(['POST'])
 def process_request(request):
 
-"""
-set up parse request++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""
+	"""
+	set up parse request++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	"""
 	r = request.POST.get('query')
 
 	user = User.objects.get(username="tester")
@@ -107,30 +107,29 @@ set up parse request++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	words = parseOnlineStanford(r)
 
-"""
-start analysis tree+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""
+	"""
+	start analysis tree+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	"""
 	fsm = START
 	object_list = []
 	adj_list = []
-
 	while words:
 		tmp = words.pop(0)
 		if fsm == START:
-			if tmp['tag'] == "WP":
+			if tmp['tag'] == "WP" or tmp['tag'] == "WDT":
 				fsm = WHAT
 			elif tmp['tag'] == "WRB":
 				fsm = WHEN
 		elif fsm == WHAT:
 			if tmp['tag'] == "NN":
 				if tmp['word'] == "next" or tmp['word'] == "previous":
-					return HttpResponse(navigational(word, proxy))
+					return HttpResponse(navigational(tmp['word'], proxy))
 				else:
 					if tmp['word'] not in object_list:
 						object_list.append(tmp['word'])
 			elif tmp['tag'] == "JJ":
 				if tmp['word'] == "next" or tmp['word'] == "previous":
-					return HttpResponse(navigational(word, proxy))
+					return HttpResponse(navigational(tmp['word'], proxy))
 				else:
 					if tmp['word'] not in adj_list:
 						adj_list.append(tmp['word'])
@@ -139,17 +138,17 @@ start analysis tree+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			#FILL IN LATER
 		else:
 			pass
-"""
-Get and Respond++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""
+	"""
+	Get and Respond++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	"""
 
 	return_val = []
 	if fsm == WHAT:
 		for entry in object_list:
 			try:
-				val = current_set.additionaltools_set.get(bucket="definition", name=entry)
-				return_val.append({ entry : val })
+				val = current_set.additionaltools_set.get(bucket="definition", name=entry).description
+				return_val.append("A " + entry + " is " + val + '. ')
 			except:
-				pass
+				return_val.append("I am sorry, I do not know what a " + entry + " is. ")
 	return HttpResponse(return_val)
 
