@@ -141,7 +141,6 @@ def process_request(request):
 	"""
 	Get and Respond++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	"""
-
 	return_val = []
 	if fsm == WHAT:
 		for entry in object_list:
