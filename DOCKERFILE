@@ -1,22 +1,9 @@
-FROM java:8
+FROM python:2.7
 ENV PYTHONUNBUFFERED 1
 
 #Create application directory and setup dependencies
 WORKDIR /app
-RUN apt-get update && apt-get install -y dos2unix \
-	rake \
-	python2.7 \
-	python-dev \
-	python-pip \
-	libmysqlclient-dev
-
-#Copy stanford parser and build
-COPY ./manual_app/stanford_parser /app/manual_app/stanford_parser
-WORKDIR /app/manual_app/stanford_parser/3rdParty/jpype/JPype-0.5.4.1
-RUN python setup.py install
-WORKDIR /app/manual_app/stanford_parser/3rdParty/stanford-parser
-RUN rake download --trace
-RUN rake setup --trace
+RUN apt-get update && apt-get install -y dos2unix 
 
 #Copy pip dependencies and build
 WORKDIR /app/
@@ -28,10 +15,9 @@ RUN pip install --no-deps -r production.txt
 WORKDIR /app/
 COPY . /app/
 COPY start.sh /start.sh
+RUN pip install bs4
 
 #Expose port, migrate, and run WSGI server
 EXPOSE 8080
-RUN python manage.py makemigrations
-RUN python manage.py migrate
 RUN dos2unix start.sh
 CMD /bin/bash ./start.sh

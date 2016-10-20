@@ -20,4 +20,4 @@ class AdditionalTools(models.Model):
 class UserProxy(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
 	step = models.IntegerField(default=0)
-	current_instruction_set = models.ForeignKey(InstructionSet)
+	current_instruction_set = models.ForeignKey(InstructionSet, blank=True, null=True)
