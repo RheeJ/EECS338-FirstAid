@@ -9,7 +9,7 @@ class Step(models.Model):
 	step_number = models.IntegerField(default=0)
 	repeat = models.IntegerField(default=0)
 	description = models.CharField(max_length=500)
-	InsructionSet = models.ForeignKey(InstructionSet)
+	InstructionSet = models.ForeignKey(InstructionSet)
 
 class AdditionalTools(models.Model):
 	bucket = models.CharField(max_length=20)
