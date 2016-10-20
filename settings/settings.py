@@ -81,18 +81,19 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fa_database',
-        'USER': 'tre3frog',
-        'PASSWORD': 'wildcat2016',
-        'HOST': 'fa-db.cb2r7wmunbdb.us-west-2.rds.amazonaws.com',
-        'PORT': '3306',
-        'OPTIONS': {
-            'sql_mode': 'traditional',
-        }
+'default': {
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': 'fa_database',
+    'USER': 'tre3frog',
+    'PASSWORD': 'wildcat2016',
+    'HOST': 'fa-db.cb2r7wmunbdb.us-west-2.rds.amazonaws.com',
+    'PORT': '3306',
+    'OPTIONS': {
+        'sql_mode': 'traditional',
     }
 }
+}
+
 
 
 # Password validation

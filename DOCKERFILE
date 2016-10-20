@@ -1,13 +1,23 @@
 FROM python:2.7
 ENV PYTHONUNBUFFERED 1
-RUN mkdir /app
+
+#Create application directory and setup dependencies
 WORKDIR /app
-RUN apt-get update && apt-get install dos2unix
+RUN apt-get update && apt-get install -y dos2unix 
+
+#Copy pip dependencies and build
+WORKDIR /app/
+COPY ./requirements/production.txt /app/requirements/
+WORKDIR /app/requirements
+RUN pip install --no-deps -r production.txt
+
+#Copy rest of app and build
+WORKDIR /app/
 COPY . /app/
-RUN pip install --no-deps -r requirements/production.txt
 COPY start.sh /start.sh
+RUN pip install bs4
+
+#Expose port, migrate, and run WSGI server
 EXPOSE 8080
-RUN python manage.py makemigrations
-RUN python manage.py migrate
 RUN dos2unix start.sh
 CMD /bin/bash ./start.sh
