@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework import status
 from rest_framework.response import Response
 from django.template import loader
 from rest_framework.decorators import api_view
+import json
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -22,7 +24,35 @@ class ATViewSet(viewsets.ModelViewSet):
 	queryset = AdditionalTools.objects.all()
 	serializer_class = ATSerializer
 
-@api_view(['GET'])
-def test_function(request):
-	return Response("Test Backend Function")
+@api_view(['POST'])
+def setInstructionSet(request):
+
+	# instruction set json object
+	instructionSet = json.loads(request.body, strict=False)
+
+	# print instructionSet
+	
+	#try:
+	ins = InstructionSet.objects.create(name=instructionSet['name'])
+
+	print ins
+	
+	for index, step in enumerate(instructionSet['steps']):
+		Step.objects.create(
+			step_number = index,
+			repeat = step['repeat'],
+			description = step['description'],
+			InstructionSet=ins)
+
+	for tool in instructionSet['additional_tools']:
+		AdditionalTools.objects.create(
+			name = tool['name'],
+			bucket = tool['bucket'],
+			description = tool['description'],
+			Instruction = ins)
+
+	return Response(status=status.HTTP_201_CREATED)
+	
+	#except:
+		#return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
