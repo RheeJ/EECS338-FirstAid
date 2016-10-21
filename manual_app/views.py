@@ -29,13 +29,9 @@ def setInstructionSet(request):
 
 	# instruction set json object
 	instructionSet = json.loads(request.body, strict=False)
-
-	# print instructionSet
 	
 	#try:
 	ins = InstructionSet.objects.create(name=instructionSet['name'])
-
-	print ins
 	
 	for index, step in enumerate(instructionSet['steps']):
 		Step.objects.create(
@@ -46,7 +42,6 @@ def setInstructionSet(request):
 
 	for tool in instructionSet['additional_tools']:
 		AdditionalTools.objects.create(
-			name = tool['name'],
 			bucket = tool['bucket'],
 			description = tool['description'],
 			Instruction = ins)
