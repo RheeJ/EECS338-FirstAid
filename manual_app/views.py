@@ -40,21 +40,36 @@ def setInstructionSet(request):
 	# instruction set json object
 	instructionSet = json.loads(request.body, strict=False)
 	
-	#try:
-	ins = InstructionSet.objects.create(name=instructionSet['name'])
+	try:
+		ins = InstructionSet.objects.get(name=instructionSet['name'])
+	except:
+		ins = InstructionSet.objects.create(name=instructionSet['name'])
 	
 	for index, step in enumerate(instructionSet['steps']):
-		Step.objects.create(
-			step_number = index,
-			repeat = step['repeat'],
-			description = step['description'],
-			InstructionSet=ins)
+		try:
+			Step.objects.get(
+				step_number = index,
+				repeat = step['repeat'],
+				description = step['description'],
+				InstructionSet=ins)
+		except:
+			Step.objects.create(
+				step_number = index,
+				repeat = step['repeat'],
+				description = step['description'],
+				InstructionSet=ins)
 
 	for tool in instructionSet['additional_tools']:
-		AdditionalTools.objects.create(
-			bucket = tool['bucket'],
-			description = tool['description'],
-			Instruction = ins)
+		try:
+			AdditionalTools.objects.get(
+				bucket = tool['bucket'],
+				description = tool['description'],
+				Instruction = ins)
+		except:
+			AdditionalTools.objects.create(
+				bucket = tool['bucket'],
+				description = tool['description'],
+				Instruction = ins)
 
 	return Response(status=status.HTTP_201_CREATED)
 	
