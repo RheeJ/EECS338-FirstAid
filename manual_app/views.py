@@ -35,33 +35,44 @@ class ATViewSet(viewsets.ModelViewSet):
 	queryset = AdditionalTools.objects.all()
 	serializer_class = ATSerializer
 
-@api_view(['POST'])
-def setInstructionSet(request):
+	@api_view(['POST'])
+	def setInstructionSet(request):
 
-	# instruction set json object
-	instructionSet = json.loads(request.body, strict=False)
-	
-	#try:
-	ins = InstructionSet.objects.create(name=instructionSet['name'])
-	
-	for index, step in enumerate(instructionSet['steps']):
-		Step.objects.create(
-			step_number = index,
-			repeat = step['repeat'],
-			description = step['description'],
-			InstructionSet=ins)
+		# instruction set json object
+		instructionSet = json.loads(request.body, strict=False)
+		
+		try:
+			ins = InstructionSet.objects.get(name=instructionSet['name'])
+		except:
+			ins = InstructionSet.objects.create(name=instructionSet['name'])
+		
+		for index, step in enumerate(instructionSet['steps']):
+			try:
+				Step.objects.get(
+					step_number = index,
+					repeat = step['repeat'],
+					InstructionSet=ins)
+			except:
+				Step.objects.create(
+					step_number = index,
+					repeat = step['repeat'],
+					description = step['description'],
+					InstructionSet=ins)
 
-	for tool in instructionSet['additional_tools']:
-		AdditionalTools.objects.create(
-			name = tool['name'],
-			bucket = tool['bucket'],
-			description = tool['description'],
-			Instruction = ins)
+		for tool in instructionSet['additional_tools']:
+			try:
+				AdditionalTools.objects.get(
+					name = tool['name'],
+					bucket = tool['bucket'],
+					Instruction = ins)
+			except:
+				AdditionalTools.objects.create(
+					name = tool['name'],
+					bucket = tool['bucket'],
+					description = tool['description'],
+					Instruction = ins)
 
-	return HttpResponse("CREATED")
-	
-	#except:
-		#return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+		return Response(status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 def process_request(request):
