@@ -11,4 +11,5 @@ router.register(r'additionals', ATViewSet, 'additionaltools')
 urlpatterns = [
 	url(r'^', include(router.urls)),
 	url(r'^ask/$', process_request),
+	url(r'^data_post/$', setInstructionSet),
 ]

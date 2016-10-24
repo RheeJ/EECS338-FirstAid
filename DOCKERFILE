@@ -15,7 +15,7 @@ RUN pip install --no-deps -r production.txt
 WORKDIR /app/
 COPY . /app/
 COPY start.sh /start.sh
-RUN pip install bs4
+RUN pip install bs4==0.0.1
 
 #Expose port, migrate, and run WSGI server
 EXPOSE 8080
