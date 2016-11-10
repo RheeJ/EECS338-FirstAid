@@ -18,10 +18,8 @@ from urllib2 import *
 from os import *
 from bs4 import BeautifulSoup
 from question_parser import *
-
-START = 0
-WHAT = 1
-WHEN = 2
+from sentence_analyzer import *
+from definition_parser import *
 
 class InstructionSetViewSet(viewsets.ModelViewSet):
 	queryset = InstructionSet.objects.all()
@@ -34,45 +32,88 @@ class StepViewSet(viewsets.ModelViewSet):
 class ATViewSet(viewsets.ModelViewSet):
 	queryset = AdditionalTools.objects.all()
 	serializer_class = ATSerializer
+	
+class QuestionsViewSet(viewsets.ModelViewSet):
+	queryset = Questions.objects.all()
+	serializer_class = QuestionsSerializer
 
 @api_view(['POST'])
-def setInstructionSet(request):
-
-	# instruction set json object
-	instructionSet = json.loads(request.body, strict=False)
-	
+def blackbox_2_store(request):
+	# OUR REQUEST IS JSON DATA.
+	data = json.loads(request.body, strict=False)
 	try:
-		ins = InstructionSet.objects.get(name=instructionSet['name'])
+		ins = InstructionSet.objects.get(name=data['name'])
 	except:
-		ins = InstructionSet.objects.create(name=instructionSet['name'])
-	
-	for index, step in enumerate(instructionSet['steps']):
+		ins = InstructionSet.objects.create(name=data['name'])
+	for idx, step in enumerate(data['steps']):
+		definition_input = []
+		definition_input.append([])
 		try:
-			Step.objects.get(
-				step_number = index,
-				repeat = step['repeat'],
-				InstructionSet=ins)
+			stp = Step.objects.get(
+				step_number = idx,
+				InstructionSet = ins,
+				description = step['description'])
 		except:
-			Step.objects.create(
-				step_number = index,
-				repeat = step['repeat'],
-				description = step['description'],
-				InstructionSet=ins)
-
-	for tool in instructionSet['additional_tools']:
-		try:
-			AdditionalTools.objects.get(
-				name = tool['name'],
-				bucket = tool['bucket'],
-				Instruction = ins)
-		except:
-			AdditionalTools.objects.create(
-				name = tool['name'],
-				bucket = tool['bucket'],
-				description = tool['description'],
-				Instruction = ins)
-
-	return Response(status=status.HTTP_201_CREATED)
+			try:
+				stp = Step.objects.get(
+					step_number = idx,
+					InstructionSet = ins)
+				stp.description = step['description']
+				stp.save()
+			except:
+				stp = Step.objects.create(
+					step_number = idx,
+					description = step['description'],
+					InstructionSet=ins)
+		definition_input[0].append(step['description'])
+		for sentence in step['sentences']:
+			definition_input[0].append(step['description'])
+			context = { 'type' : 'step', 'name' : step['description'], 'sentence' : sentence }
+			packaged_result = sentence_analyze(context)
+			for result in packaged_result:
+				try:
+					ats = AdditionalTools.objects.get(
+						name = step['description'],
+						description = result['description'],
+						Step = stp,
+						Instruction = ins)
+				except:
+					ats = AdditionalTools.objects.create(
+						name = step['description'],
+						description = result['description'],
+						Step = stp,
+						Instruction = ins)
+				for question in result['questions']:
+					try:
+						qst = Questions.objects.get(
+							question = question,
+							answer = ats)
+					except:
+						qst = Questions.objects.create(
+							question = question,
+							answer = ats)
+		definition_results = definition_finder(definition_input)
+		for entry in definition_results:
+			try:
+				ats = AdditionalTools.objects.get(
+					name = entry[0],
+					description = entry[1],
+					Instruction = ins)
+			except:
+				ats = AdditionalTools.objects.create(
+					name = entry[0],
+					description = entry[1],
+					Instruction = ins)
+			for question in entry[2]:
+				try:
+					qst = Questions.objects.get(
+						question = question,
+						answer = ats)
+				except:
+					qst = Questions.objects.create(
+						question = question,
+						answer = ats)
+	return HttpResponse("Posting successful")
 
 @api_view(['POST'])
 def process_request(request):
@@ -84,8 +125,16 @@ def process_request(request):
 
 	user = User.objects.get(username="tester")
 	proxy = UserProxy.objects.get(user= user)
-	proxy.current_instruction_set = InstructionSet.objects.get(name="Thermal Burn")
 	proxy.save()
+
+	if "Instructions for" in r or "instructions for" in r:
+		new = r.split("for ")
+		val = new[1]
+		proxy.current_instruction_set = InstructionSet.objects.get(name=val)
+		proxy.step = 0
+		proxy.save()
+		return HttpResponse("Here are the instructions for " + proxy.current_instruction_set.name + ".")
+
 	current_set = proxy.current_instruction_set 
 
 	words = parseOnlineStanford(r)
@@ -117,10 +166,9 @@ def process_request(request):
 					if tmp['word'] not in adj_list:
 						adj_list.append(tmp['word'])
 		elif fsm == WHEN:
-			pass
-			#FILL IN LATER
+			return HttpResponse("Did not understand!")
 		else:
-			pass
+			return HttpResponse("Did not understand!")
 	"""
 	Get and Respond++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	"""
@@ -132,4 +180,7 @@ def process_request(request):
 				return_val.append("A " + entry + " is " + val + '. ')
 			except:
 				return_val.append("I am sorry, I do not know what a " + entry + " is. ")
-	return HttpResponse(return_val)
+	if return_val:
+		return HttpResponse(return_val)
+	else: 
+		return HttpResponse("We could not find what you were looking for.")

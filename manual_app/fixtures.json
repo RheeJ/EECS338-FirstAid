@@ -1,0 +1,21 @@
+{
+	"name": "bruise",
+	"steps":[
+		{
+			"description" : "elevate the injured area",
+			"sentences" : []
+		},
+		{
+			"description" : "apply an ice pack wrapped in a towel or a cloth dampened with cold water",
+			"sentences" : ["do this for about 10 minutes", "repeat several times a day for a day or two after the injury as needed"]
+		},
+		{
+			"description" : "rest the bruised area, if possible",
+			"sentences" : []
+		},
+		{
+			"description" : "consider acetaminophen (Tylenol, others) for pain relief, or ibuprofen (Advil, Motrin IB, others) for pain relief and to reduce swelling",
+			"sentences" : []
+		}
+	]
+}

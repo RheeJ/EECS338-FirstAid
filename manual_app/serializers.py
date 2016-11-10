@@ -4,26 +4,24 @@ from rest_framework import serializers
 class InstructionSetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = InstructionSet
-        fields = ('__all__')
+        fields = ('name',
+        			'step_set',)
 
 class StepSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Step
-		fields = ('__all__')
+		fields = ('step_number',
+					'description',
+					'additionaltools_set',)
 
 class ATSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = AdditionalTools
-		fields = ('__all__')
+		fields = ('name',
+					'description',
+					'questions_set')
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name="myapp:user-detail")
-
-    class Meta:
-        model = User
-        fields = ('username')
-
-class ProxySerializer(serializers.HyperlinkedModelSerializer):
+class QuestionsSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
-		model = UserProxy
+		model = Questions
 		fields = ('__all__')
