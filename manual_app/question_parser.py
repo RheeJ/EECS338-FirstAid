@@ -20,7 +20,7 @@ def parseOnlineStanford(query):
 		try:
 			edited_string = info.string.strip('\n ')
 			split_string = edited_string.split('/')
-			entry = { 'word' : split_string[0], 'tag' : split_string[1] }
+			entry = (split_string[0], split_string[1])
 			ret.append(entry)
 		except:
 			pass

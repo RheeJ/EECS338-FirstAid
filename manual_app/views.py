@@ -20,6 +20,7 @@ from bs4 import BeautifulSoup
 from question_parser import *
 from sentence_analyzer import *
 from definition_parser import *
+from nltk import *
 
 class InstructionSetViewSet(viewsets.ModelViewSet):
 	queryset = InstructionSet.objects.all()
@@ -87,10 +88,14 @@ def blackbox_2_store(request):
 					try:
 						qst = Questions.objects.get(
 							question = question,
+							instructionset = ins,
+							step = stp,
 							answer = ats)
 					except:
 						qst = Questions.objects.create(
 							question = question,
+							instructionset = ins,
+							step = stp,
 							answer = ats)
 		definition_results = definition_finder(definition_input)
 		for entry in definition_results:
@@ -108,79 +113,144 @@ def blackbox_2_store(request):
 				try:
 					qst = Questions.objects.get(
 						question = question,
+						instructionset = ins,
 						answer = ats)
 				except:
 					qst = Questions.objects.create(
 						question = question,
+						instructionset = ins,
 						answer = ats)
 	return HttpResponse("Posting successful")
 
 @api_view(['POST'])
 def process_request(request):
-
-	"""
-	set up parse request++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	"""
+	WHAT = 0
+	WHERE_WHEN = 1
 	r = request.POST.get('query')
-
-	user = User.objects.get(username="tester")
-	proxy = UserProxy.objects.get(user= user)
-	proxy.save()
-
-	if "Instructions for" in r or "instructions for" in r:
-		new = r.split("for ")
-		val = new[1]
-		proxy.current_instruction_set = InstructionSet.objects.get(name=val)
-		proxy.step = 0
+	words = r.split(' ')
+	navigational_next = ["what is the next step",
+							"next",
+							"what's next",
+							"what is next",
+							"what else"
+	]
+	navigational_prev = ["what is the previous step",
+							"previous",
+							"go back",
+							"what was the last step",
+							"what did you say previously",
+	]
+	navigational_repeat = ["can you say that again",
+							"repeat",
+							"what",
+							"say again",
+							"come again"
+	]
+	try:
+		user = User.objects.get(username="tester")
+		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
-		return HttpResponse("Here are the instructions for " + proxy.current_instruction_set.name + ".")
+	except:
+		user = User.objects.create(username="tester")
+		ins = InstructionSet.objects.get(name="bruise")
+		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
+	#Layer 0 (Check Navigational or Set Instruction)
+	print r
+	if r in navigational_next:
+		current_step = proxy.step + 1
+		current_set = proxy.current_instruction_set
+		try:
+			return_val = current_set.step_set.get(step_number=current_step).description
+			proxy.step = current_step
+			proxy.save()
+			return HttpResponse(return_val)
+		except:
+			return HttpResponse("there are no more instructions")
+	elif r in navigational_prev:
+		current_step = proxy.step - 1
+		current_set = proxy.current_instruction_set
+		try:
+			return_val = current_set.step_set.get(step_number=current_step).description
+			proxy.step = current_step
+			proxy.save()
+			return HttpResponse(return_val)
+		except:
+			return HttpResponse("this is the first instruction. " + current_set.step_set.get(step_number=0).description)
+	elif r in navigational_repeat:
+		return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=proxy.step).description)
+	if "how do you treat a " in r:
+		obj = r.replace("how do you treat a ", "")
+		try:
+			proxy.current_instruction_set = InstructionSet.objects.get(name=obj)
+			proxy.step = 0
+			proxy.save()
+			return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=0).description)
+		except:
+			return HttpResponse("we couldn't find the manual you were looking for")
+	#Layer 1 (Query all steps)
+	current_step = proxy.step
+	result = ""
+	stp = proxy.current_instruction_set.step_set.get(step_number=current_step)
+	answer = Questions.objects.filter(question=r, step=stp, instructionset=proxy.current_instruction_set)
+	if answer:
+		for ans in answer:
+			result = result + ans.answer.description + ". "
+		return HttpResponse(result)
+	else:
+		pass
 
-	current_set = proxy.current_instruction_set 
-
-	words = parseOnlineStanford(r)
-
-	"""
-	start analysis tree+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	"""
-	fsm = START
-	object_list = []
-	adj_list = []
-	while words:
-		tmp = words.pop(0)
-		if fsm == START:
-			if tmp['tag'] == "WP" or tmp['tag'] == "WDT":
-				fsm = WHAT
-			elif tmp['tag'] == "WRB":
-				fsm = WHEN
-		elif fsm == WHAT:
-			if tmp['tag'] == "NN":
-				if tmp['word'] == "next" or tmp['word'] == "previous":
-					return HttpResponse(navigational(tmp['word'], proxy))
-				else:
-					if tmp['word'] not in object_list:
-						object_list.append(tmp['word'])
-			elif tmp['tag'] == "JJ":
-				if tmp['word'] == "next" or tmp['word'] == "previous":
-					return HttpResponse(navigational(tmp['word'], proxy))
-				else:
-					if tmp['word'] not in adj_list:
-						adj_list.append(tmp['word'])
-		elif fsm == WHEN:
-			return HttpResponse("Did not understand!")
+	#Layer 2 (Query the set)
+	result = ""
+	answer = Questions.objects.filter(question=r, instructionset=proxy.current_instruction_set)
+	step_binary = 0
+	if answer:
+		for ans in answer:
+			if not ans.step:
+				step_binary = 1
+				result = result + ans.answer.description + ". "
+			else:
+				pass
+		if step_binary == 1:
+			return HttpResponse(result)
 		else:
-			return HttpResponse("Did not understand!")
-	"""
-	Get and Respond++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	"""
-	return_val = []
-	if fsm == WHAT:
-		for entry in object_list:
-			try:
-				val = current_set.additionaltools_set.get(bucket="definition", name=entry).description
-				return_val.append("A " + entry + " is " + val + '. ')
-			except:
-				return_val.append("I am sorry, I do not know what a " + entry + " is. ")
-	if return_val:
-		return HttpResponse(return_val)
-	else: 
-		return HttpResponse("We could not find what you were looking for.")
+			pass
+	else:
+		pass
+	#Layer 3 (Compound definition queries)
+	answer = ""
+	partial = ""
+	POS_words = parseOnlineStanford(r)
+	for phrase in ['what is', "what's", 'how do I', 'what do you mean by', 'how to']:
+		if phrase in r:
+			for word in POS_words:
+				if word[1] == "VB":
+					question = "what is " + word[0]
+					try:
+						part = Questions.objects.get(question = question, instructionset = proxy.current_instruction_set).answer.description
+						answer = "to " + word[0] + " is to " + part
+					except:
+						pass
+				elif word[1] == "JJ":
+					question = "what is " + word[0]
+					try:
+						part = Questions.objects.get(question = question, instructionset = proxy.current_instruction_set).answer.description
+						partial =" which is " + word[0] + " or " + part
+					except:
+						pass
+				elif word[1] == "NN":
+					question = "what is " + word[0]
+					try:
+						part = Questions.objects.get(question=question, instructionset= proxy.current_instruction_set).answer.description
+						if answer != "":
+							answer = answer + " a " + word[0] + " or " + part
+						else:
+							answer = part
+					except:
+						pass
+			answer = answer + partial
+			if answer != "":
+				return HttpResponse(answer)
+			else: 
+				return HttpResponse("looking online")
+	#Layer 4 (Online query (possible elasticsearch))
+	return HttpResponse("looking online")

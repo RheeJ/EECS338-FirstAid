@@ -23,4 +23,6 @@ class UserProxy(models.Model):
 
 class Questions(models.Model):
 	question = models.CharField(max_length=100)
+	instructionset = models.ForeignKey(InstructionSet)
+	step = models.ForeignKey(Step, null=True)
 	answer = models.ForeignKey(AdditionalTools)

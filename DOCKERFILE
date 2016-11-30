@@ -13,6 +13,9 @@ RUN pip install --no-deps -r production.txt
 
 #Copy rest of app and build
 WORKDIR /app/
+RUN pip install -U nltk
+RUN pip install -U numpy
+#RUN python -c "import nltk; nltk.download('all', halt_on_error=False)"
 COPY . /app/
 COPY start.sh /start.sh
 RUN pip install bs4==0.0.1

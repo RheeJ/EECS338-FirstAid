@@ -8,13 +8,17 @@ def sentence_analyze(context):
 				questions = ["how long do I " + context['name'],
 								"for how long do I " + context['name'],
 								"until when do I " + context['name'],
-								"how long am I supposed to " + context['name']]
+								"how long am I supposed to " + context['name'],
+								"how long do I do this",
+								'how long do I do this step',
+								'when do I do this',
+								"when do I do this step"]
 				description = context['sentence']
 				package = {'description' : description, 'step' : step, 'questions' : questions}
 				packaged_results.append(package)
 				break
 	#WHERE ANSWERS
-	for word in ['where', 'aim', 'edge', 'center', 'location', 'place', 'area', 'around']:
+	for word in ['where', 'aim', 'edge', 'center', 'location', 'place', 'area', 'around', 'out', 'in']:
 		if word in context['sentence']:
 			if context['type'] == 'step':
 				step = context['name']
@@ -28,7 +32,8 @@ def sentence_analyze(context):
 								'where is the location to ' + context['name'],
 								'what is the location to ' + context['name'],
 								'where is the area to ' + context['name'],
-								'what is the area to ' + context['name']]
+								'what is the area to ' + context['name'],
+								'where do I do this']
 				packaged_results.append(package)
 				break
 	return packaged_results
