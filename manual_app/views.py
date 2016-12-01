@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.template import loader
 from rest_framework.decorators import api_view
 import json
+import os
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -55,7 +56,7 @@ def blackbox_2_store(request):
 			wng = Warnings.objects.create(
 				description = warnings['description'],
 				Instruction = ins)
-		context = { 'type' : 'step', 'name' : warnings['description'], 'sentence' : "if you experience "+warnings['description']+", then see a doctor as soon as possible" }
+		context = { 'type' : 'warning', 'name' : warnings['description'], 'sentence' : "if "+warnings['description']+", then see a doctor as soon as possible" }
 		packaged_result = sentence_analyze(context)
 		for result in packaged_result:
 				try:
@@ -158,11 +159,11 @@ def blackbox_2_store(request):
 @api_view(['POST'])
 def process_definition(request):
 	try:
-		user = User.objects.get(username="tester")
+		user = User.objects.get(username="new_user")
 		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
 	except:
-		user = User.objects.create(username="tester")
+		user = User.objects.create(username="new_user")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
 	r = request.POST.get('query')
@@ -241,11 +242,11 @@ def process_navigational(request):
 							"come again"
 	]
 	try:
-		user = User.objects.get(username="tester")
+		user = User.objects.get(username="new_user")
 		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
 	except:
-		user = User.objects.create(username="tester")
+		user = User.objects.create(username="new_user")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
 	r = request.POST.get('query')
@@ -275,8 +276,8 @@ def process_navigational(request):
 			return HttpResponse("this is the first instruction. " + current_set.step_set.get(step_number=0).description)
 	elif r in navigational_repeat:
 		return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=proxy.step).description)
-	if "how do you treat a " in r:
-		obj = r.replace("how do you treat a ", "")
+	if "how do you treat " in r:
+		obj = r.replace("how do you treat ", "")
 		try:
 			proxy.current_instruction_set = InstructionSet.objects.get(name=obj)
 			proxy.step = 0
@@ -294,11 +295,11 @@ def process_navigational(request):
 @api_view(['POST'])
 def process_step_question(request):
 	try:
-		user = User.objects.get(username="tester")
+		user = User.objects.get(username="new_user")
 		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
 	except:
-		user = User.objects.create(username="tester")
+		user = User.objects.create(username="new_user")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
 	r = request.POST.get('query')
@@ -314,17 +315,26 @@ def process_step_question(request):
 		return HttpResponse(result)
 	else:
 		pass
-	return HttpResponse("looking online")
+	if r not in ["what are the details for this step", "can I have more details", "what else", "what else should I know", "what more", "why"]:
+		answer = Questions.objects.filter(question=r, instructionset=proxy.current_instruction_set)
+		result = ""
+		if answer:
+			for ans in answer:
+				result = result + ans.answer.description + ". "
+			return HttpResponse(result)
+		else:
+			pass
+	return HttpResponse("something else")
 
 #FOR MORE DETAILS
 @api_view(['POST'])
 def process_step_all(request):
 	try:
-		user = User.objects.get(username="tester")
+		user = User.objects.get(username="new_user")
 		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
 	except:
-		user = User.objects.create(username="tester")
+		user = User.objects.create(username="new_user")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
 	r = request.POST.get('query')
@@ -354,11 +364,11 @@ def process_step_all(request):
 @api_view(['POST'])
 def process_warnings(request):
 	try:
-		user = User.objects.get(username="tester")
+		user = User.objects.get(username="new_user")
 		proxy = UserProxy.objects.get(user= user)
 		proxy.save()
 	except:
-		user = User.objects.create(username="tester")
+		user = User.objects.create(username="new_user")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
 	r = request.POST.get('query')
@@ -367,3 +377,20 @@ def process_warnings(request):
 	for tmp in proxy.current_instruction_set.warnings_set.all():
 		result = result + tmp.description + ", "
 	return HttpResponse(result)
+
+def online_answers(string):
+	url = "https://www.google.com/search?q="
+	words = string.split(" ")
+	for word in words:
+		url += word
+		url += "+"
+		url = url[:-1]
+		html = get(url).text
+		soup = BeautifulSoup(html, 'html.parser')
+		section = soup.find('div', {'class' : '_sPg'})
+		if section != None:	
+			answer = section.getText()
+			break
+		else:
+			answer = "I don't know"
+	return answer
