@@ -47,7 +47,7 @@
 }
 
 {
-	"name": "gastroenteritis",
+	"name": "stomach ache",
 	"steps":[
 		{
 			"description" : "stop eating for a few hours to let your stomach settle",
@@ -97,6 +97,47 @@
 		},
 		{
 			"description": "worrisome abdominal pain develops"
+		}
+	]
+}
+
+{
+	"name": "nose bleed",
+	"steps":[
+		{
+			"description" : "sit upright and lean forward",
+			"sentences" : ["by remaining upright, you reduce blood pressure in the veins of your nose",
+							"this discourages further bleeding",
+							"sitting forward will help you avoid swallowing blood, which can irritate your stomach"]
+		},
+		{
+			"description" : "pinch your nose",
+			"sentences" : ["use your thumb and index finger to pinch your nostrils shut",
+							"breathe through your mouth",
+							"continue to pinch for five to 10 minutes",
+							"pinching sends pressure to the bleeding point on the nasal septum and often stops the flow of blood"]
+		},
+		{
+			"description" : "To prevent re-bleeding, don't pick or blow your nose, don't bend down for several hours after the bleeding episode, and keep head higher than heart",
+			"sentences" : []
+		},
+		{
+			"description" : "if re-bleeding occurs, blow out forcefully to clear your nose of blood clots and spray both sides of your nose with a decongestant nasal spray containing oxymetazoline (Afrin, Mucinex Moisture Smart, others)",
+			"sentences" : ["pinch your nose again as described above and call your doctor"]
+		}
+	],
+	"warnings":[
+		{
+			"description" : "the bleeding lasts for more than 20 minutes"
+		},
+		{
+			"description" : "the nosebleed follows an accident, a fall or an injury to your head, including a punch in the face that may have broken your nose"
+		},
+		{
+			"description" : "you experience frequent nosebleeds"
+		},
+		{
+			"description" : "you're experiencing nasal bleeding and taking blood thinners, such as aspirin or warfarin (coumadin, jantoven)"
 		}
 	]
 }

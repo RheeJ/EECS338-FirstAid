@@ -1,6 +1,5 @@
 FROM python:2.7
 ENV PYTHONUNBUFFERED 1
-
 #Create application directory and setup dependencies
 WORKDIR /app
 RUN apt-get update && apt-get install -y dos2unix 
@@ -10,11 +9,12 @@ RUN pip install Django==1.10.2 \
 djangorestframework==3.4.7 \
 mysql-python==1.2.5 \
 gunicorn==19.6.0 \
-requests
+requests \
+nltk
 
 #Copy rest of app and build
 WORKDIR /app/
-RUN pip install -U nltk
+RUN pip install PyDictionary
 RUN pip install -U numpy
 #RUN python -c "import nltk; nltk.download('all', halt_on_error=False)"
 ADD . /app/
