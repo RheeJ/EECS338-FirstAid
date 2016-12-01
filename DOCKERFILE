@@ -6,18 +6,19 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y dos2unix 
 
 #Copy pip dependencies and build
-WORKDIR /app/
-COPY ./requirements/production.txt /app/requirements/
-WORKDIR /app/requirements
-RUN pip install --no-deps -r production.txt
+RUN pip install Django==1.10.2 \
+djangorestframework==3.4.7 \
+mysql-python==1.2.5 \
+gunicorn==19.6.0 \
+requests
 
 #Copy rest of app and build
 WORKDIR /app/
 RUN pip install -U nltk
 RUN pip install -U numpy
 #RUN python -c "import nltk; nltk.download('all', halt_on_error=False)"
-COPY . /app/
-COPY start.sh /start.sh
+ADD . /app/
+ADD start.sh /start.sh
 RUN pip install bs4==0.0.1
 
 #Expose port, migrate, and run WSGI server

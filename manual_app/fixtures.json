@@ -18,8 +18,85 @@
 			"sentences" : []
 		}
 	],
-
 	"warnings":[
-	""
+		{
+			"description": "notice very painful swelling in the bruised area"
+		},
+		{
+			"description": "are still experiencing pain three days after a seemingly minor injury"
+		},
+		{
+			"description": "have frequent, large or painful bruises, particularly if your bruises appear on your trunk, back or face, or seem to develop for no known reasons"
+		},
+		{
+			"description": "have easy bruising and a history of significant bleeding, such as during a surgical procedure"
+		},
+		{
+			"description": "notice a lump (hematoma) form over the bruise"
+		},	
+		{
+			"description": "are experiencing abnormal bleeding elsewhere, such as from your nose or gums or in urine or stool"
+		},
+		{
+			"description": "suddenly begin bruising, but have no history of bruising"
+		},
+		{
+			"description": "have a family history of easy bruising or bleeding"
+		}
+	]
+}
+
+{
+	"name": "gastroenteritis",
+	"steps":[
+		{
+			"description" : "stop eating for a few hours to let your stomach settle",
+			"sentences" : []
+		},
+		{
+			"description" : "drink plenty of liquids, such as a sports drink or water, to prevent dehydration",
+			"sentences" : ["if you have trouble tolerating liquids, take them in frequent sips", 
+							"make sure that you're urinating normally and that your urine is light and clear not dark",
+							 "infrequent passage of dark urine is a sign of dehydration",
+							 "dizziness and lightheadedness also are signs of dehydration",
+							 "if any of these signs and symptoms occur and you can't drink enough fluids, seek medical attention"]
+		},
+		{
+			"description" : "ease back into eating",
+			"sentences" : ["gradually begin to eat bland, easy-to-digest foods, such as soda crackers, toast, gelatin, bananas, rice and chicken",
+							"stop eating if your nausea returns",
+							"avoid milk and dairy products, caffeine, alcohol, nicotine, and fatty or highly seasoned foods for a few days"]
+		},
+		{
+			"description" : "consider acetaminophen (Tylenol, others) for relief of discomfort, unless you have liver disease",
+			"sentences" : []
+		},
+		{
+			"description" : "get plenty of rest",
+			"sentences" : ["the illness and dehydration can make you weak and tired"]
+		}
+	],
+	"warnings":[
+		{
+			"description": "vomiting persists more than two days"
+		},
+		{
+			"description": "diarrhea persists more than several days"
+		},
+		{
+			"description": "Diarrhea turns bloody"
+		},
+		{
+			"description": "fever is 101 F (38.3 C) or higher"
+		},
+		{
+			"description": "lightheadedness or fainting occurs with standing"
+		},
+		{
+			"description": "confusion develops"
+		},
+		{
+			"description": "worrisome abdominal pain develops"
+		}
 	]
 }

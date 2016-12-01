@@ -1,0 +1,17 @@
+branch-defaults:
+  master:
+    environment: eecs338-firstaid2-dev
+    group_suffix: null
+environment-defaults:
+  eecs338-firstaid2-dev:
+    branch: master
+    repository: origin
+global:
+  application_name: eecs338-firstaid2
+  branch: master
+  default_ec2_keyname: my-ec2-key-pair
+  default_platform: Docker 1.11.2
+  default_region: us-west-2
+  profile: eb-cli
+  repository: origin
+  sc: git

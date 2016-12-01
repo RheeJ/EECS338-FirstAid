@@ -46,6 +46,39 @@ def blackbox_2_store(request):
 		ins = InstructionSet.objects.get(name=data['name'])
 	except:
 		ins = InstructionSet.objects.create(name=data['name'])
+	for idx, warnings in enumerate(data['warnings']):
+		try:
+			wng = Warnings.objects.get(
+				Instruction = ins,
+				description = warnings['description'])
+		except:
+			wng = Warnings.objects.create(
+				description = warnings['description'],
+				Instruction = ins)
+		context = { 'type' : 'step', 'name' : warnings['description'], 'sentence' : "if you experience "+warnings['description']+", then see a doctor as soon as possible" }
+		packaged_result = sentence_analyze(context)
+		for result in packaged_result:
+				try:
+					ats = AdditionalTools.objects.get(
+						name = warnings['description'],
+						description = result['description'],
+						Instruction = ins)
+				except:
+					ats = AdditionalTools.objects.create(
+						name = warnings['description'],
+						description = result['description'],
+						Instruction = ins)
+				for question in result['questions']:
+					try:
+						qst = Questions.objects.get(
+							question = question,
+							instructionset = ins,
+							answer = ats)
+					except:
+						qst = Questions.objects.create(
+							question = question,
+							instructionset = ins,
+							answer = ats)
 	for idx, step in enumerate(data['steps']):
 		definition_input = []
 		definition_input.append([])
@@ -123,29 +156,7 @@ def blackbox_2_store(request):
 	return HttpResponse("Posting successful")
 
 @api_view(['POST'])
-def process_request(request):
-	WHAT = 0
-	WHERE_WHEN = 1
-	r = request.POST.get('query')
-	words = r.split(' ')
-	navigational_next = ["what is the next step",
-							"next",
-							"what's next",
-							"what is next",
-							"what else"
-	]
-	navigational_prev = ["what is the previous step",
-							"previous",
-							"go back",
-							"what was the last step",
-							"what did you say previously",
-	]
-	navigational_repeat = ["can you say that again",
-							"repeat",
-							"what",
-							"say again",
-							"come again"
-	]
+def process_definition(request):
 	try:
 		user = User.objects.get(username="tester")
 		proxy = UserProxy.objects.get(user= user)
@@ -154,51 +165,8 @@ def process_request(request):
 		user = User.objects.create(username="tester")
 		ins = InstructionSet.objects.get(name="bruise")
 		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
-	#Layer 0 (Check Navigational or Set Instruction)
-	print r
-	if r in navigational_next:
-		current_step = proxy.step + 1
-		current_set = proxy.current_instruction_set
-		try:
-			return_val = current_set.step_set.get(step_number=current_step).description
-			proxy.step = current_step
-			proxy.save()
-			return HttpResponse(return_val)
-		except:
-			return HttpResponse("there are no more instructions")
-	elif r in navigational_prev:
-		current_step = proxy.step - 1
-		current_set = proxy.current_instruction_set
-		try:
-			return_val = current_set.step_set.get(step_number=current_step).description
-			proxy.step = current_step
-			proxy.save()
-			return HttpResponse(return_val)
-		except:
-			return HttpResponse("this is the first instruction. " + current_set.step_set.get(step_number=0).description)
-	elif r in navigational_repeat:
-		return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=proxy.step).description)
-	if "how do you treat a " in r:
-		obj = r.replace("how do you treat a ", "")
-		try:
-			proxy.current_instruction_set = InstructionSet.objects.get(name=obj)
-			proxy.step = 0
-			proxy.save()
-			return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=0).description)
-		except:
-			return HttpResponse("we couldn't find the manual you were looking for")
-	#Layer 1 (Query all steps)
-	current_step = proxy.step
-	result = ""
-	stp = proxy.current_instruction_set.step_set.get(step_number=current_step)
-	answer = Questions.objects.filter(question=r, step=stp, instructionset=proxy.current_instruction_set)
-	if answer:
-		for ans in answer:
-			result = result + ans.answer.description + ". "
-		return HttpResponse(result)
-	else:
-		pass
-
+	r = request.POST.get('query')
+	words = r.split(' ')
 	#Layer 2 (Query the set)
 	result = ""
 	answer = Questions.objects.filter(question=r, instructionset=proxy.current_instruction_set)
@@ -250,7 +218,152 @@ def process_request(request):
 			answer = answer + partial
 			if answer != "":
 				return HttpResponse(answer)
-			else: 
-				return HttpResponse("looking online")
-	#Layer 4 (Online query (possible elasticsearch))
 	return HttpResponse("looking online")
+
+@api_view(['POST'])
+def process_navigational(request):
+	navigational_next = ["what is the next step",
+							"next",
+							"what's next",
+							"what is next",
+							"what else"
+	]
+	navigational_prev = ["what is the previous step",
+							"previous",
+							"go back",
+							"what was the last step",
+							"what did you say previously",
+	]
+	navigational_repeat = ["can you say that again",
+							"repeat",
+							"what",
+							"say again",
+							"come again"
+	]
+	try:
+		user = User.objects.get(username="tester")
+		proxy = UserProxy.objects.get(user= user)
+		proxy.save()
+	except:
+		user = User.objects.create(username="tester")
+		ins = InstructionSet.objects.get(name="bruise")
+		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
+	r = request.POST.get('query')
+	words = r.split(' ')
+
+	#Layer 0 (Check Navigational or Set Instruction)
+	print r
+	if r in navigational_next:
+		current_step = proxy.step + 1
+		current_set = proxy.current_instruction_set
+		try:
+			return_val = current_set.step_set.get(step_number=current_step).description
+			proxy.step = current_step
+			proxy.save()
+			return HttpResponse(return_val)
+		except:
+			return HttpResponse("there are no more instructions")
+	elif r in navigational_prev:
+		current_step = proxy.step - 1
+		current_set = proxy.current_instruction_set
+		try:
+			return_val = current_set.step_set.get(step_number=current_step).description
+			proxy.step = current_step
+			proxy.save()
+			return HttpResponse(return_val)
+		except:
+			return HttpResponse("this is the first instruction. " + current_set.step_set.get(step_number=0).description)
+	elif r in navigational_repeat:
+		return HttpResponse(proxy.current_instruction_set.step_set.get(step_number=proxy.step).description)
+	if "how do you treat a " in r:
+		obj = r.replace("how do you treat a ", "")
+		try:
+			proxy.current_instruction_set = InstructionSet.objects.get(name=obj)
+			proxy.step = 0
+			proxy.save()
+			warns = proxy.current_instruction_set.warnings_set.all()
+			result = "See a doctor immediately if you experience any of these: "
+			for w in warns:
+				result = result + w.description + ", "
+			return HttpResponse("This is how you treat a "+proxy.current_instruction_set.name+". " + result)
+		except:
+			return HttpResponse("we couldn't find the manual you were looking for")
+	#Layer 4 (Online query (possible elasticsearch))
+	return HttpResponse("we had trouble parsing your navigational request")
+
+@api_view(['POST'])
+def process_step_question(request):
+	try:
+		user = User.objects.get(username="tester")
+		proxy = UserProxy.objects.get(user= user)
+		proxy.save()
+	except:
+		user = User.objects.create(username="tester")
+		ins = InstructionSet.objects.get(name="bruise")
+		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
+	r = request.POST.get('query')
+	words = r.split(' ')
+	#Layer 1 (Query all steps)
+	current_step = proxy.step
+	result = ""
+	stp = proxy.current_instruction_set.step_set.get(step_number=current_step)
+	answer = Questions.objects.filter(question=r, step=stp, instructionset=proxy.current_instruction_set)
+	if answer:
+		for ans in answer:
+			result = result + ans.answer.description + ". "
+		return HttpResponse(result)
+	else:
+		pass
+	return HttpResponse("looking online")
+
+#FOR MORE DETAILS
+@api_view(['POST'])
+def process_step_all(request):
+	try:
+		user = User.objects.get(username="tester")
+		proxy = UserProxy.objects.get(user= user)
+		proxy.save()
+	except:
+		user = User.objects.create(username="tester")
+		ins = InstructionSet.objects.get(name="bruise")
+		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
+	r = request.POST.get('query')
+	words = r.split(' ')
+	if words[-1] == 'this' or words[-1] == 'step':
+		result = ""
+		stp = proxy.current_instruction_set.step_set.get(step_number=current_step)
+		answers = AdditionalTools.objects.filter(step = stp, instructionset=proxy.current_instruction_set)
+		if answer:
+			for ans in answer:
+				result = result + ans.description + ". "
+			return HttpResponse(result)
+		else:
+			pass
+		return HttpResponse("there are no more details for the current step")
+	else:
+ 		all_answers = proxy.current_instruction_set.additionaltools_set.all()
+ 		result = "" 
+ 		if all_answers:
+			for answer in all_answers:
+				if words[-1] in answer.name or words[-1] in answer.description:
+					result = result + answer.description + ". "
+			return HttpResponse(result)
+		return HttpResponse("there are no details regarding your request")
+
+#FOR WARNINGS REPEATED
+@api_view(['POST'])
+def process_warnings(request):
+	try:
+		user = User.objects.get(username="tester")
+		proxy = UserProxy.objects.get(user= user)
+		proxy.save()
+	except:
+		user = User.objects.create(username="tester")
+		ins = InstructionSet.objects.get(name="bruise")
+		proxy = UserProxy.objects.create(user= user, step = 0, current_instruction_set = ins)
+	r = request.POST.get('query')
+	words = r.split(' ')
+	result = ""
+	for tmp in proxy.current_instruction_set.warnings_set.all():
+		result = result + tmp.description + ", "
+	return HttpResponse(result)
