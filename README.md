@@ -17,3 +17,15 @@ You will require a python virtualenv. Configure activate script to run dev_setti
 For example: On Windows, add this "set "DJANGO_SETTINGS_MODULE=settings.dev_settings"" to activate.bat.
 ### The endpoint localhost:8000/manual_app/data_post takes a long time so when posting instruction sets, use Django localhost.
 "python manage.py runserver" to run local server. There are three examples in fixtures.json.
+
+# Perhaps New Approach
+### Database stores different tools per instruction set.
+##### What tools are used in the procedures?
+##### What are the warnings?
+##### What are the different time parts?
+##### What are the different location parts?
+##### What are the different temperaturs parts?
+
+### Each of the Database attributes may be linked up with a set.
+
+### Machine Learning amongst different attributes from different sets.
